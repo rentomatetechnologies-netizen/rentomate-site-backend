@@ -1,0 +1,90 @@
+// RentOMate admin: admins, sessions and blog content.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique // stored lowercase
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+  sessions     Session[]
+}
+
+// The session cookie holds a random token; only its SHA-256 hash is stored here.
+model Session {
+  tokenHash String   @id
+  adminId   Int
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ip        String   @default("")
+  userAgent String   @default("")
+
+  @@index([adminId])
+  @@index([expiresAt])
+}
+
+// Failed logins, used to rate-limit password guessing per username and per IP.
+model LoginAttempt {
+  id        Int      @id @default(autoincrement())
+  username  String
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([username, createdAt])
+  @@index([ip, createdAt])
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Post {
+  id             Int        @id @default(autoincrement())
+  slug           String     @unique
+  title          String
+  excerpt        String     @default("")
+  category       String     @default("")
+  author         String     @default("")
+  coverImage     String     @default("")
+  coverAlt       String     @default("")
+  publishedOn    DateTime   @db.Date
+  readMinutes    Int        @default(1)
+  status         PostStatus @default(DRAFT)
+  featured       Boolean    @default(false)
+  /// Ordered content blocks: paragraph | heading | quote | list | image | faq | cta (see src/validation/post.schema.ts)
+  blocks         Json       @default("[]")
+  seoTitle       String     @default("")
+  seoDescription String     @default("")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([status, publishedOn])
+}
+
+// Uploaded images live in the database so the app runs on any host (no local disk needed).
+model Media {
+  id        String   @id @default(cuid())
+  filename  String
+  mimeType  String
+  size      Int
+  data      Bytes
+  createdAt DateTime @default(now())
+}
+
+// Editable website content, one JSON document per key (e.g. "hero" for the homepage hero).
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
