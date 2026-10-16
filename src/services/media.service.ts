@@ -4,7 +4,7 @@ import { config } from "../config";
 import { HttpError } from "../lib/http-error";
 import { prisma } from "../lib/prisma";
 
-export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+export const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 
 /** Upload subfolders inside UPLOADS_DIR: blog post images and homepage hero slides. */
 export const MEDIA_FOLDERS = ["blog", "hero"] as const;
