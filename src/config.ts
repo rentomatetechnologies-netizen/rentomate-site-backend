@@ -17,6 +17,10 @@ export const config = {
   trustProxy: env.TRUST_PROXY || "loopback, linklocal, uniquelocal",
   revalidateUrl: env.FRONTEND_REVALIDATE_URL || "",
   revalidateSecret: env.REVALIDATE_SECRET || "",
+  // The public website, for the page URLs sent to IndexNow. INDEXNOW_KEY must match rentomate-frontend/public/indexnow-key.txt;
+  // leave it unset in development so local edits are never submitted.
+  siteUrl: (env.SITE_URL || "https://rentomate.life").replace(/\/$/, ""),
+  indexNowKey: env.INDEXNOW_KEY || "",
   // Uploaded images live here, one subfolder per use (blog/, hero/). Default: the "uploads" folder next to this project.
   uploadsDir: path.resolve(env.UPLOADS_DIR || path.join(process.cwd(), "..", "uploads")),
 };

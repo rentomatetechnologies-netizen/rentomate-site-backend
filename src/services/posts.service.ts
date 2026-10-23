@@ -2,6 +2,7 @@ import type { Post } from "../generated/prisma/client";
 import { HttpError, notFound } from "../lib/http-error";
 import { prisma } from "../lib/prisma";
 import type { PostInput } from "../validation/post.schema";
+import { notifyIndexNow } from "./indexnow.service";
 import { revalidateWebsite } from "./revalidate.service";
 
 const toDateString = (date: Date) => date.toISOString().slice(0, 10);
@@ -27,25 +28,37 @@ export async function getPost(id: number) {
   return toAdminPost(post);
 }
 
+/** Submits the pages that change when these posts appear on or leave the site; drafts are never public, so they are skipped. */
+function notifySearchEngines(...posts: Pick<Post, "slug" | "status">[]) {
+  const published = posts.filter((post) => post.status === "PUBLISHED");
+  if (published.length) notifyIndexNow(["/blog", ...published.map((post) => `/blog/${post.slug}`)]);
+}
+
 export async function createPost(input: PostInput) {
   await assertSlugFree(input.slug);
   const post = await prisma.post.create({ data: input });
   revalidateWebsite();
+  notifySearchEngines(post);
   return toAdminPost(post);
 }
 
 export async function updatePost(id: number, input: PostInput) {
-  if (!(await prisma.post.findUnique({ where: { id }, select: { id: true } }))) throw notFound("Post");
+  const before = await prisma.post.findUnique({ where: { id }, select: { slug: true, status: true } });
+  if (!before) throw notFound("Post");
   await assertSlugFree(input.slug, id);
   const post = await prisma.post.update({ where: { id }, data: input });
   revalidateWebsite();
+  // The old URL too, so a renamed or unpublished post drops out of search.
+  notifySearchEngines(before, post);
   return toAdminPost(post);
 }
 
 export async function deletePost(id: number) {
+  const post = await prisma.post.findUnique({ where: { id }, select: { slug: true, status: true } });
   const { count } = await prisma.post.deleteMany({ where: { id } });
-  if (!count) throw notFound("Post");
+  if (!count || !post) throw notFound("Post");
   revalidateWebsite();
+  notifySearchEngines(post);
 }
 
 export async function getDashboard() {

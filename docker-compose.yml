@@ -31,6 +31,8 @@ services:
       # Where the website is, as seen from inside this container.
       FRONTEND_REVALIDATE_URL: ${DOCKER_FRONTEND_REVALIDATE_URL:-http://host.docker.internal:3000/api/revalidate}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      INDEXNOW_KEY: ${INDEXNOW_KEY:-}
+      SITE_URL: ${SITE_URL:-https://rentomate.life}
       UPLOADS_DIR: /app/uploads
     volumes:
       # Uploaded images (blog/, hero/) are kept on the host, by default in the "uploads" folder next to this project.
