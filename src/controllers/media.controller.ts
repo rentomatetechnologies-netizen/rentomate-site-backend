@@ -6,7 +6,7 @@ export async function upload(req: Request, res: Response) {
   if (!req.file || req.file.size === 0) throw new HttpError(400, "Choose an image to upload.");
   const folder = req.body?.folder ?? "blog";
   if (!mediaService.isMediaFolder(folder)) throw new HttpError(400, "Unknown upload folder.");
-  const url = await mediaService.saveImage(folder, req.file.buffer);
+  const url = await mediaService.saveImage(folder, req.file.buffer, req.file.originalname);
   res.status(201).json({ url });
 }
 

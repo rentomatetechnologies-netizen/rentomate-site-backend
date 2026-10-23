@@ -78,6 +78,8 @@ const toPublicSummary = (post: Omit<Post, "blocks">) => ({
   featured: post.featured,
   seoTitle: post.seoTitle,
   seoDescription: post.seoDescription,
+  focusKeyword: post.focusKeyword,
+  keywords: post.keywords,
   updatedAt: post.updatedAt.toISOString(),
 });
 

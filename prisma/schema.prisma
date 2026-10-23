@@ -62,10 +62,14 @@ model Post {
   readMinutes    Int        @default(1)
   status         PostStatus @default(DRAFT)
   featured       Boolean    @default(false)
-  /// Ordered content blocks: paragraph | heading | quote | list | image | faq | cta (see src/validation/post.schema.ts)
+  /// Ordered content blocks: paragraph | heading | quote | list | image | faq | callout | table | toc | cta (see src/validation/post.schema.ts)
   blocks         Json       @default("[]")
   seoTitle       String     @default("")
   seoDescription String     @default("")
+  /// SEO only (meta keywords + structured data), never shown on the page.
+  focusKeyword   String     @default("")
+  /// Comma-separated secondary keywords.
+  keywords       String     @default("")
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 

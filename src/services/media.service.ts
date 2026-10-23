@@ -31,24 +31,41 @@ function detectImageType(bytes: Buffer): keyof typeof EXTENSIONS | null {
   return null;
 }
 
+// Multipart filenames arrive latin1-decoded; re-decode so names like "குடிநீர்.jpg" survive.
+const decodeFilename = (name: string) => (/[^\x00-\xff]/.test(name) ? name : Buffer.from(name, "latin1").toString("utf8"));
+
+/** The uploaded file's own name without its extension, minus anything unsafe in a path or URL. */
+function baseName(originalName: string) {
+  const name = path.basename(decodeFilename(originalName).replace(/\\/g, "/"));
+  const stem = name.includes(".") ? name.slice(0, name.lastIndexOf(".")) : name;
+  const safe = stem
+    .replace(/[\x00-\x1f\x7f/\\:*?"<>|#%&{}^~[\]`]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^\.+/, "")
+    .slice(0, 150);
+  return safe || "image";
+}
+
 /**
- * Saves an uploaded image as UPLOADS_DIR/<folder>/img<N>.<ext> (img1, img2, …) and returns its public URL path,
- * e.g. /media/blog/img3.jpg.
+ * Saves an uploaded image under the name it was uploaded with, as UPLOADS_DIR/<folder>/<name>.<ext>, and returns
+ * its public URL path, e.g. /media/blog/ro-purifier.jpg. If that name is taken, -1, -2, … is added so an existing
+ * image (cached forever by browsers) is never overwritten.
  */
-export async function saveImage(folder: MediaFolder, bytes: Buffer) {
+export async function saveImage(folder: MediaFolder, bytes: Buffer, originalName: string) {
   const mimeType = detectImageType(bytes);
   if (!mimeType) throw new HttpError(400, "Only JPG, PNG, WebP, GIF or AVIF images are allowed.");
 
   const dir = path.join(config.uploadsDir, folder);
   await fs.mkdir(dir, { recursive: true });
-  const taken = (await fs.readdir(dir)).map((name) => Number(/^img(\d+)\./.exec(name)?.[1] ?? 0));
+  const base = baseName(originalName);
 
   // "wx" fails if the file already exists, so two uploads at the same moment can't overwrite each other.
-  for (let n = Math.max(0, ...taken) + 1; ; n++) {
-    const filename = `img${n}.${EXTENSIONS[mimeType]}`;
+  for (let n = 0; ; n++) {
+    const filename = `${n === 0 ? base : `${base}-${n}`}.${EXTENSIONS[mimeType]}`;
     try {
       await fs.writeFile(path.join(dir, filename), bytes, { flag: "wx" });
-      return `/media/${folder}/${filename}`;
+      return `/media/${folder}/${encodeURIComponent(filename)}`;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
     }

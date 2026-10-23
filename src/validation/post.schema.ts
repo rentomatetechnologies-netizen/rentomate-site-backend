@@ -16,6 +16,10 @@ export const blockSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("image"), url: imageUrl, alt: text(200), caption: text(300) }),
   // Question/answer pairs: shown as an accordion and emitted as FAQPage structured data.
   z.object({ type: z.literal("faq"), items: z.array(z.object({ question: text(300), answer: text(2000) })).max(30) }),
+  // Highlighted box near the top of a post, e.g. "Direct answer" or "Summary" (helps Google/AI answers).
+  z.object({ type: z.literal("callout"), title: text(100), text: text(3000) }),
+  // Table: the first row is the header row.
+  z.object({ type: z.literal("table"), rows: z.array(z.array(text(500)).max(8)).max(40) }),
   // Call-to-action banner that opens the website's lead form.
   z.object({ type: z.literal("cta"), text: text(200), buttonLabel: text(40) }),
   // Table of contents: the website fills it in from the post's headings.
@@ -43,6 +47,7 @@ export function estimateReadMinutes(blocks: Block[]) {
       if (block.type === "list") return block.items;
       if (block.type === "faq") return block.items.flatMap((item) => [item.question, item.answer]);
       if (block.type === "image") return [block.caption];
+      if (block.type === "table") return block.rows.flat();
       if (block.type === "toc") return [];
       return [block.text];
     })
@@ -82,6 +87,8 @@ export const postInputSchema = z
     blocks: z.array(blockSchema).max(200).default([]),
     seoTitle: text(200).default(""),
     seoDescription: text(400).default(""),
+    focusKeyword: text(120).default(""),
+    keywords: text(1000).default(""),
   })
   .transform((input, ctx) => {
     // Drop empty blocks, blank list items, half-filled FAQs and extra tables of contents (one per post).
@@ -89,12 +96,14 @@ export const postInputSchema = z
       .map((block) => {
         if (block.type === "list") return { ...block, items: block.items.filter(Boolean) };
         if (block.type === "faq") return { ...block, items: block.items.filter((item) => item.question && item.answer) };
+        if (block.type === "table") return { ...block, rows: block.rows.filter((row) => row.some(Boolean)) };
         return block;
       })
       .filter((block, i, all) => {
         if (block.type === "toc") return all.findIndex((b) => b.type === "toc") === i;
         if (block.type === "image") return block.url;
         if (block.type === "list" || block.type === "faq") return block.items.length;
+        if (block.type === "table") return block.rows.length;
         return block.text;
       });
 
