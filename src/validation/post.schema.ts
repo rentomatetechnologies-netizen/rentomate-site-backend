@@ -77,6 +77,7 @@ export const postInputSchema = z
     author: text(80).default(""),
     coverImage: imageUrl.default(""),
     coverAlt: text(200).default(""),
+    coverCaption: text(300).default(""),
     publishedOn: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Publish date must be a valid date.")

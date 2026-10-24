@@ -58,6 +58,8 @@ model Post {
   author         String     @default("")
   coverImage     String     @default("")
   coverAlt       String     @default("")
+  /// Shown under the cover image at the top of the article.
+  coverCaption   String     @default("")
   publishedOn    DateTime   @db.Date
   readMinutes    Int        @default(1)
   status         PostStatus @default(DRAFT)

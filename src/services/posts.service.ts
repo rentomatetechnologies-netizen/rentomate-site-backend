@@ -86,6 +86,7 @@ const toPublicSummary = (post: Omit<Post, "blocks">) => ({
   author: post.author,
   coverImage: post.coverImage,
   coverAlt: post.coverAlt,
+  coverCaption: post.coverCaption,
   date: toDateString(post.publishedOn),
   readMinutes: post.readMinutes,
   featured: post.featured,
