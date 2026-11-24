@@ -16,8 +16,8 @@ const BRAND = "Rentomate";
 const TITLE_SUFFIX = ` | ${BRAND}`;
 
 // "Rent", optional spaces or hyphens, a capital "O", an optional apostrophe (straight, curly, backtick or HTML entity),
-// optional spaces or hyphens, then "Mate". Case-sensitive, so "Rentomate" and "rentomate.life" never match.
-const OLD_BRAND = /Rent[\s-]*O(?:'|’|‘|`|&apos;|&#0?39;|&rsquo;)?[\s-]*Mate/g;
+// optional spaces or hyphens, then "Mate" or "mate". The capital "O" is required, so "Rentomate" and "rentomate.life" never match.
+const OLD_BRAND = /Rent[\s-]*O(?:'|’|‘|`|&apos;|&#0?39;|&rsquo;)?[\s-]*[Mm]ate/g;
 const HAS_OLD_BRAND = new RegExp(OLD_BRAND.source);
 
 // Keys holding URLs or file paths; their values are left exactly as they are.
