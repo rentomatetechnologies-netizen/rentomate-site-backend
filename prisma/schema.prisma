@@ -1,4 +1,4 @@
-// RentOMate admin: admins, sessions and blog content.
+// Rentomate admin: admins, sessions and blog content.
 
 generator client {
   provider     = "prisma-client"

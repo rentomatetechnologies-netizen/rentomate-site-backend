@@ -1,4 +1,4 @@
-# RentOMate backend stack: PostgreSQL + API. The website runs separately and reaches the API via its BACKEND_URL.
+# Rentomate backend stack: PostgreSQL + API. The website runs separately and reaches the API via its BACKEND_URL.
 # Usage (from this folder): cp .env.example .env, fill it in, then `docker compose up -d --build`.
 
 name: rentomate-backend

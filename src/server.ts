@@ -4,7 +4,7 @@ import { prisma } from "./lib/prisma";
 import { revalidateWebsite } from "./services/revalidate.service";
 
 const server = createApp().listen(config.port, () => {
-  console.log(`RentOMate API listening on http://localhost:${config.port}`);
+  console.log(`Rentomate API listening on http://localhost:${config.port}`);
   // On a fresh deploy the website may have been built while this API was down (empty blog).
   // Ask it to refresh once it's likely up.
   for (const delay of [15_000, 60_000]) setTimeout(revalidateWebsite, delay).unref();

@@ -74,7 +74,8 @@ export const postInputSchema = z
       .refine((value) => countWords(value) <= MAX_EXCERPT_WORDS, `Excerpt can be at most ${MAX_EXCERPT_WORDS} words.`)
       .default(""),
     category: text(60).default(""),
-    author: text(80).default(""),
+    // A post saved without an author is credited to the team.
+    author: text(80).default("").transform((value) => value || "Rentomate Team"),
     coverImage: imageUrl.default(""),
     coverAlt: text(200).default(""),
     coverCaption: text(300).default(""),

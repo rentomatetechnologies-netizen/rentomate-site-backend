@@ -1,4 +1,4 @@
-# RentOMate Backend
+# Rentomate Backend
 
 The REST API behind **rentomate.life**: admin authentication, blog posts and image uploads. It is the **only service that connects to PostgreSQL**. The website (`rentomate-frontend`), including the admin panel at `/admin`, talks to it over HTTP.
 

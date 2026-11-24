@@ -11,7 +11,7 @@ const isImageUrl = (url: string) => url === "" || url.startsWith("/media/") || /
 const isLink = (link: string) => link === "" || link === "lead" || /^\/(?!\/)/.test(link) || /^https?:\/\//.test(link);
 
 export const blogBannerInputSchema = z.object({
-  // On by default: with no image uploaded, the website shows its built-in RentOMate promo.
+  // On by default: with no image uploaded, the website shows its built-in Rentomate promo.
   enabled: z.boolean().default(true),
   image: text(500).refine(isImageUrl, "Invalid image URL.").default(""),
   alt: text(200).default(""),
